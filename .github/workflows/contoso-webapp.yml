@@ -1,0 +1,68 @@
+name: Contoso-WEBAPP
+
+env:
+  PROJECT_FILE: src/Contoso.Web/Contoso.Web.csproj
+  WEB_APP_NAME: contosopolicy
+
+on:
+  workflow_dispatch:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    paths:
+      - src/Contoso.Web/**
+      - .github/workflows/contoso-webapp.yml
+    branches:
+    - master
+    - web-app
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.2.0
+        
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.201
+     
+      - name: Install dependencies
+        run: dotnet restore ${{env.PROJECT_FILE}} 
+      
+      - name: BuildApp
+        run: dotnet publish ${{env.PROJECT_FILE}} -c Release --no-restore 
+      
+      - name: Create Issue
+        if: ${{ failure() }}
+        run: |
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+          gh issue create --title "I found a bug" --body "Workflow Name: ${{github.workflow }}
+          Workflow Run ID: ${{ github.run_id }}"
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Contosowebapp
+          path: src/Contoso.Web/bin/Release/netcoreapp3.1/publish
+          
+  deploy:
+    name: DEPLOY TO AZURE WEB APP
+    runs-on: ubuntu-latest
+    if: success()
+    needs: [build]
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: Contosowebapp
+          path: ${{github.workspace}}
+              
+      - name: Azure Login
+        uses: Azure/login@v1.1
+        with:
+          creds: ${{secrets.CONTOSO_POLICY_CREDS}}
+
+      - name: Azure WebApp Deploy
+        uses: Azure/webapps-deploy@v2
+        with:
+          app-name: ${{env.WEB_APP_NAME}}
