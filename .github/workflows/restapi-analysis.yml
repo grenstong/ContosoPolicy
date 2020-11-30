@@ -1,24 +1,25 @@
 name: "REST API Static Security Testing"
 
-# follow standard Code Scanning triggers
 on:
-  push:
+  pull_request:
     branches: [ master ]
     paths:
     - src/Contoso.WebApi/**
     - .github/workflows/restapi-analysis.yml
-  pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [ master ]
   schedule:
     - cron: '15 0 * * 6'
-  
+
+env:
+  API_URL: 'https://contosoplicyapi.azurewebsites.net/swagger/v1/swagger.json'
+
 jobs:
   rest-api-static-security-testing:
     runs-on: ubuntu-latest
     steps:
-      - run: pip install requests
-      - name: Get Rest API
+      - name: Install requests library
+        run: pip install requests
+      
+      - name: Get Rest API json
         shell: python
         run: |
           from requests import get
@@ -31,7 +32,7 @@ jobs:
         uses: 42Crunch/api-security-audit-action@v1
         with:
           api-token: ${{ secrets.API_TOKEN }}
-          min-score: 85
+          min-score: 15
           upload-to-code-scanning: true
           github-token: ${{ github.token }}
           workdir: /home/runner/work/ContosoPolicy/ContosoPolicy/src/Contoso.WebApi/bin/Release/netcoreapp3.1/publish
