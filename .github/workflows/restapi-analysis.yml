@@ -1,0 +1,41 @@
+name: "REST API Static Security Testing"
+
+# follow standard Code Scanning triggers
+on:
+  push:
+    branches: [ master ]
+    paths:
+    - src/Contoso.WebApi/**
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ master ]
+  schedule:
+    - cron: '15 0 * * 6'
+
+env:
+  PROJECT_FILE: src/Contoso.WebApi/Contoso.WebApi.csproj
+  
+jobs:
+  rest-api-static-security-testing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.201
+     
+      - name: Install dependencies
+        run: dotnet restore ${{env.PROJECT_FILE}} 
+      
+      - name: Build Api
+        run: dotnet publish ${{env.PROJECT_FILE}} -c Release --no-restore 
+        
+      - name: REST API Static Security Testing
+        uses: 42Crunch/api-security-audit-action@v1
+        with:
+          api-token: ${{ secrets.API_TOKEN }}
+          min-score: 75
+          upload-to-code-scanning: true
+          github-token: ${{ github.token }}
