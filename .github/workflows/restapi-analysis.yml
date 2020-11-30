@@ -6,6 +6,7 @@ on:
     branches: [ master ]
     paths:
     - src/Contoso.WebApi/**
+    - .github/workflows/restapi-analysis.yml
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ master ]
@@ -36,6 +37,6 @@ jobs:
         uses: 42Crunch/api-security-audit-action@v1
         with:
           api-token: ${{ secrets.API_TOKEN }}
-          min-score: 75
+          min-score: 85
           upload-to-code-scanning: true
           github-token: ${{ github.token }}
