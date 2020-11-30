@@ -12,27 +12,20 @@ on:
     branches: [ master ]
   schedule:
     - cron: '15 0 * * 6'
-
-env:
-  PROJECT_FILE: src/Contoso.WebApi/Contoso.WebApi.csproj
   
 jobs:
   rest-api-static-security-testing:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1.201
-     
-      - name: Install dependencies
-        run: dotnet restore ${{env.PROJECT_FILE}} 
-      
-      - name: Build Api
-        run: dotnet publish ${{env.PROJECT_FILE}} -c Release --no-restore 
-        
+      - name: Get Rest API
+        shell: python
+        run: |
+          from requests import get
+          from json import dump
+          with open('swagger.json','w') as swaggerfile:
+              dump(get('https://contosoplicyapi.azurewebsites.net/swagger/v1/swagger.json').json(),swaggerfile)
+              swaggerfile.close()
+                
       - name: REST API Static Security Testing
         uses: 42Crunch/api-security-audit-action@v1
         with:
