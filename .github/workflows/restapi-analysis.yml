@@ -1,6 +1,11 @@
 name: "REST API Static Security Testing"
 
 on:
+  push:
+    branches: [ master ]
+    paths:
+    - src/Contoso.WebApi/**
+    - .github/workflows/restapi-analysis.yml
   pull_request:
     branches: [ master ]
     paths:
@@ -25,7 +30,7 @@ jobs:
           from requests import get
           from json import dump
           with open('swagger.json','w') as swaggerfile:
-              dump(get('https://contosoplicyapi.azurewebsites.net/swagger/v1/swagger.json').json(),swaggerfile)
+              dump(get('${{ env.API_URL }}').json(),swaggerfile)
               swaggerfile.close()
                 
       - name: REST API Static Security Testing
