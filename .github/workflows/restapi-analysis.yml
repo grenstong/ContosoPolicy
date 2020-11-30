@@ -40,3 +40,4 @@ jobs:
           min-score: 85
           upload-to-code-scanning: true
           github-token: ${{ github.token }}
+          work-dir: /home/runner/work/ContosoPolicy/ContosoPolicy/src/Contoso.WebApi/bin/Release/netcoreapp3.1/publish
