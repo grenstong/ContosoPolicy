@@ -17,6 +17,7 @@ jobs:
   rest-api-static-security-testing:
     runs-on: ubuntu-latest
     steps:
+      - run: pip install requests
       - name: Get Rest API
         shell: python
         run: |
